@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auth Code</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 100px;
+    }
+    .code-box {
+      font-size: 20px;
+      padding: 15px;
+      border: 2px solid #333;
+      display: inline-block;
+      margin-top: 20px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h2>Authorization Successful</h2>
+  <p>Please copy the code below and send it to me on Slack.</p>
+  <div id="code" class="code-box">Loading...</div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+
+    if (code) {
+      document.getElementById("code").innerText = code;
+    } else {
+      document.getElementById("code").innerText = "No code found.";
+    }
+  </script>
+</body>
+</html>
