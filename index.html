@@ -1,12 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Authorization</title>
+  <title>Oura Login</title>
   <style>
     body {
       font-family: Arial;
       text-align: center;
       margin-top: 100px;
+    }
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
     }
     .box {
       font-size: 18px;
@@ -16,41 +22,69 @@
       margin-top: 20px;
       word-break: break-all;
     }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
-  <h2>Authorization Successful</h2>
-  <p>Please end the copied text on Slack.</p>
 
-  <div id="display" class="box">Loading...</div>
-  <br>
-  <button onclick="copyToClipboard()">Copy CODE + STATE</button>
+  <h2>Connect Your Oura Ring</h2>
 
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const state = params.get("state");
+  <div id="login-section">
+    <button onclick="loginWithOura()">Login with Oura</button>
+  </div>
 
-    let formatted = "";
+  <div id="result-section" style="display:none;">
+    <p>Click below and send the copied text.</p>
+    <div id="display" class="box"></div>
+    <br>
+    <button onclick="copyToClipboard()">Copy CODE + STATE</button>
+  </div>
 
-    if (code && state) {
-      formatted = `CODE: ${code} | STATE: ${state}`;
-      document.getElementById("display").innerText = formatted;
-    } else {
-      document.getElementById("display").innerText = "Missing code or state.";
-    }
+<script>
+  const CLIENT_ID = "f6d766af-b86d-4c76-bb8b-6181d4da7ad3";
+  const REDIRECT_URI = "https://adityaprakash-work.github.io/multivac/";
+  const SCOPE = "email personal daily heartrate tag workout session spo2 ring_configuration stress heart_health";
 
-    function copyToClipboard() {
-      navigator.clipboard.writeText(formatted).then(() => {
-        alert("Copied to clipboard!");
-      });
-    }
-  </script>
+  function generateState() {
+    return crypto.getRandomValues(new Uint32Array(4)).join("-");
+  }
+
+  function loginWithOura() {
+    const state = generateState();
+    localStorage.setItem("oura_state", state);
+
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      response_type: "code",
+      scope: SCOPE,
+      state: state
+    });
+
+    window.location.href = "https://cloud.ouraring.com/oauth/authorize?" + params.toString();
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const state = params.get("state");
+
+  if (code && state) {
+    const storedState = localStorage.getItem("oura_state");
+
+    document.getElementById("login-section").style.display = "none";
+    document.getElementById("result-section").style.display = "block";
+
+    const formatted = `CODE: ${code} | STATE: ${state}`;
+    document.getElementById("display").innerText = formatted;
+
+    window.formattedOutput = formatted;
+  }
+
+  function copyToClipboard() {
+    navigator.clipboard.writeText(window.formattedOutput).then(() => {
+      alert("Copied to clipboard!");
+    });
+  }
+</script>
+
 </body>
 </html>
